@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StorageModule } from './storage/storage.module';
+import { ArtistsModule } from './artists/artists.module';
+import { TracksModule } from './tracks/tracks.module';
 import { UsersModule } from './users/users.module';
-// import { TracksModule } from './tracks/tracks.module';
+import { AuthModule } from './auth/auth.module';
 import { TipsModule } from './tips/tips.module';
 import { StellarModule } from './stellar/stellar.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -26,8 +28,10 @@ import { NotificationsModule } from './notifications/notifications.module';
       logging: process.env.NODE_ENV === 'development',
     }),
     StorageModule,
+    ArtistsModule,
+    TracksModule,
     UsersModule,
-    // TracksModule,
+    AuthModule,
     TipsModule,
     StellarModule,
     NotificationsModule,
