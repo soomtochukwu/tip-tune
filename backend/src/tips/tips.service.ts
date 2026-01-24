@@ -16,6 +16,8 @@ import { StellarService } from '../stellar/stellar.service';
 import { UsersService } from '../users/users.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ActivitiesService } from '../activities/activities.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { TipVerifiedEvent } from './events/tip-verified.event';
 
 @Injectable()
 export class TipsService {
@@ -29,7 +31,8 @@ export class TipsService {
     private readonly notificationsService: NotificationsService,
     @Inject(forwardRef(() => ActivitiesService))
     private readonly activitiesService: ActivitiesService,
-  ) {}
+    private readonly eventEmitter: EventEmitter2,
+  ) { }
 
   async create(userId: string, createTipDto: CreateTipDto): Promise<Tip> {
     const { artistId, trackId, stellarTxHash, message } = createTipDto;
@@ -53,43 +56,43 @@ export class TipsService {
     try {
       artist = await this.usersService.findOne(artistId);
     } catch (error) {
-       if (error instanceof NotFoundException) {
-           throw new BadRequestException('Artist not found');
-       }
-       throw error;
+      if (error instanceof NotFoundException) {
+        throw new BadRequestException('Artist not found');
+      }
+      throw error;
     }
-    
+
     if (!artist.walletAddress) {
-        throw new BadRequestException('Artist does not have a wallet address configured');
+      throw new BadRequestException('Artist does not have a wallet address configured');
     }
 
     // 3. Verify transaction on Stellar
     let txDetails;
     try {
-        txDetails = await this.stellarService.getTransactionDetails(stellarTxHash);
+      txDetails = await this.stellarService.getTransactionDetails(stellarTxHash);
     } catch (e) {
-        throw new BadRequestException(`Invalid Stellar transaction hash: ${e.message}`);
+      throw new BadRequestException(`Invalid Stellar transaction hash: ${e.message}`);
     }
 
     if (!txDetails.successful) {
-         throw new BadRequestException('Stellar transaction failed on-chain');
+      throw new BadRequestException('Stellar transaction failed on-chain');
     }
 
     const operations = await txDetails.operations();
     // Find payment to artist
     const paymentOp: any = operations.records.find(
-        (op: any) => 
-            op.type === 'payment' && 
-            op.to === artist.walletAddress && 
-            (op.asset_type === 'native' || op.asset_code === 'USDC')
+      (op: any) =>
+        op.type === 'payment' &&
+        op.to === artist.walletAddress &&
+        (op.asset_type === 'native' || op.asset_code === 'USDC')
     );
 
     if (!paymentOp) {
-        throw new BadRequestException('Transaction does not contain a valid payment to the artist');
+      throw new BadRequestException('Transaction does not contain a valid payment to the artist');
     }
 
     const amount = paymentOp.amount;
-    
+
     // Create Tip entity
     const tip = this.tipRepository.create({
       fromUserId: userId,
@@ -128,7 +131,19 @@ export class TipsService {
       // Log but don't fail tip creation if activity tracking fails
       this.logger.warn(`Failed to track activities for tip: ${error.message}`);
     }
-    
+
+    // Emit TipVerifiedEvent
+    this.eventEmitter.emit(
+      'tip.verified',
+      new TipVerifiedEvent(
+        savedTip.id,
+        userId, // This is the UUID of the user context
+        artistId,
+        savedTip.amount,
+        'XLM'
+      ),
+    );
+
     return savedTip;
   }
 
