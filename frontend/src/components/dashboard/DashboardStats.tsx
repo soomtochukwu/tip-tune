@@ -2,7 +2,7 @@
 import React from 'react';
 import Card from '../ui/Card';
 import Skeleton from '../ui/Skeleton';
-import {DollarSignIcon, PlayIcon, UsersIcon} from 'lucide-react';
+import { Coins, Headphones, HeartHandshake } from 'lucide-react';
 import { formatCurrency, formatNumber } from '../../utils/formatter';
 
 interface DashboardStatsProps {
@@ -30,11 +30,13 @@ const StatCard: React.FC<{ title: string; value: string; icon: React.ReactNode; 
   return (
     <Card>
       <div className="flex items-center">
-        <div className="p-3 rounded-full bg-primary-blue/10 text-primary-blue mr-4">
-          {icon}
+        <div className="mr-4">
+          <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary-blue to-secondary-indigo flex items-center justify-center shadow-sm">
+            {icon}
+          </div>
         </div>
         <div>
-          <p className="text-sm font-sans font-display font-medium text-gray-500">{title}</p>
+          <p className="text-sm font-display font-medium text-gray-500">{title}</p>
           <p className="text-2xl font-mono font-bold text-gray-900">{value}</p>
         </div>
       </div>
@@ -44,9 +46,21 @@ const StatCard: React.FC<{ title: string; value: string; icon: React.ReactNode; 
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({ totalTips, totalPlays, supporterCount, isLoading }) => {
   const stats = [
-    { title: 'Total Tips', value: totalTips !== undefined ? formatCurrency(totalTips) : '...', icon: <DollarSignIcon className="h-6 w-6"/> },
-    { title: 'Total Plays', value: totalPlays !== undefined ? formatNumber(totalPlays) : '...', icon: <PlayIcon className="h-6 w-6"/> },
-    { title: 'Supporters', value: supporterCount !== undefined ? formatNumber(supporterCount) : '...', icon: <UsersIcon className="h-6 w-6"/> },
+    {
+      title: 'Total Tips',
+      value: totalTips !== undefined ? formatCurrency(totalTips) : '...',
+      icon: <Coins className="h-5 w-5 text-white" />,
+    },
+    {
+      title: 'Total Plays',
+      value: totalPlays !== undefined ? formatNumber(totalPlays) : '...',
+      icon: <Headphones className="h-5 w-5 text-white" />,
+    },
+    {
+      title: 'Supporters',
+      value: supporterCount !== undefined ? formatNumber(supporterCount) : '...',
+      icon: <HeartHandshake className="h-5 w-5 text-white" />,
+    },
   ];
 
   return (
