@@ -94,38 +94,20 @@ export class TipsService {
     const amount = paymentOp.amount;
     const assetCode = paymentOp.asset_type === 'native' ? 'XLM' : paymentOp.asset_code || 'UNK';
 
-    // Need to fetch user to get wallet address
     const user = await this.usersService.findOne(userId);
-    // Need to fetch artist to get wallet address for receiverAddress
-    // Wait, createTipDto might not have artist entity, just ID.
-    // Assuming we have sender address from user.
-
-    // Fetch artist (it's a User entity in this system?)
-    // No, CreateTipDto takes artistId (User ID).
-    // Let's assume we can get addresses. For MVP, I will put placeholder or look up.
-
     const senderAddress = user.walletAddress;
+    const receiverAddress = artist.walletAddress;
 
     // Create Tip entity
     const tip = this.tipRepository.create({
-      artistId: artistId, // Tip.artistId (FK to Artist) needs Artist UUID. 
-      // User passed `artistId` which is User ID of the artist (from controller/DTO).
-      // We need to find the Artist entity for this user.
-      // Skipping complicated lookup for now, assuming frontend passes UserID. 
-      // Wait, Tip entity has `artistId` as Artist UUID. 
-      // If we only have User UUID, we must find Artist.
-
-      // Let's assume for this specific fix I will use what I have.
-      // ERROR: `fromUserId` does not exist.
-
-      senderAddress: senderAddress,
-      receiverAddress: 'unknown', // Needs lookup
+      artistId: artistId,
+      senderAddress,
+      receiverAddress,
       trackId,
       amount: parseFloat(amount),
       stellarTxHash,
       message,
       status: TipStatus.VERIFIED,
-      // usdValue can be updated later via a price service
     });
 
     const savedTip = await this.tipRepository.save(tip);
@@ -173,7 +155,7 @@ export class TipsService {
   async findOne(id: string): Promise<Tip> {
     const tip = await this.tipRepository.findOne({
       where: { id },
-      relations: ['fromUser', 'toArtist', 'track'],
+      relations: ['fromUser', 'artist', 'track'],
     });
 
     if (!tip) {
@@ -192,7 +174,7 @@ export class TipsService {
 
     const queryBuilder = this.tipRepository
       .createQueryBuilder('tip')
-      .leftJoinAndSelect('tip.toArtist', 'artist')
+      .leftJoinAndSelect('tip.artist', 'artist')
       .leftJoinAndSelect('tip.track', 'track')
       .where('tip.fromUserId = :userId', { userId })
       .orderBy('tip.createdAt', 'DESC')
@@ -219,7 +201,7 @@ export class TipsService {
       .createQueryBuilder('tip')
       .leftJoinAndSelect('tip.fromUser', 'user')
       .leftJoinAndSelect('tip.track', 'track')
-      .where('tip.toArtistId = :artistId', { artistId })
+      .where('tip.artistId = :artistId', { artistId })
       .orderBy('tip.createdAt', 'DESC')
       .skip(skip)
       .take(limit);
@@ -249,7 +231,7 @@ export class TipsService {
     const queryBuilder = this.tipRepository
       .createQueryBuilder('tip')
       .leftJoinAndSelect('tip.fromUser', 'user')
-      .leftJoinAndSelect('tip.toArtist', 'artist')
+      .leftJoinAndSelect('tip.artist', 'artist')
       .where('tip.trackId = :trackId', { trackId })
       .orderBy('tip.createdAt', 'DESC')
       .skip(skip)
