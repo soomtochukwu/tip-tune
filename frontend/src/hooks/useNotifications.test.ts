@@ -76,7 +76,7 @@ describe('useNotifications', () => {
   it('should listen for tipReceived events', async () => {
     const { result } = renderHook(() => useNotifications());
 
-    const onCall = (mockSocket.on as any).mock.calls.find(call => call[0] === 'tipReceived');
+    const onCall = (mockSocket.on as any).mock.calls.find((call: any[]) => call[0] === 'tipReceived');
     expect(onCall).toBeDefined();
     
     // Simulate receiving a tip
