@@ -54,6 +54,7 @@ export const DEFAULT_SEARCH_FILTERS: SearchFiltersState = {
 export interface SearchHistoryItem {
   query: string;
   timestamp: number;
+  count?: number;
 }
 
 export const SEARCH_HISTORY_KEY = 'tiptune_search_history';

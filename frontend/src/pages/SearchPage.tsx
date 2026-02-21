@@ -26,20 +26,21 @@ export const SearchPage: React.FC = () => {
   // Run search when filters change (if query exists)
   React.useEffect(() => {
     if (query.trim()) {
-      runSearch(1);
+      runSearch(1, query);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const handleSearchSubmit = () => {
     if (query.trim()) {
-      runSearch(1);
+      runSearch(1, query);
     }
   };
 
   const handleHistorySelect = (q: string) => {
     commitQuery(q);
     // Trigger search immediately after selecting history/trending
-    setTimeout(() => runSearch(1), 0);
+    setTimeout(() => runSearch(1, q), 0);
   };
 
   return (
@@ -55,11 +56,11 @@ export const SearchPage: React.FC = () => {
           onSelectSuggestion={(item) => {
             // When suggestion selected, update query and run search
             commitQuery(item.title);
-            setTimeout(() => runSearch(1), 0);
+            setTimeout(() => runSearch(1, item.title), 0);
           }}
           onVoiceResult={(text) => {
             commitQuery(text);
-            setTimeout(() => runSearch(1), 0);
+            setTimeout(() => runSearch(1, text), 0);
           }}
           onSubmit={handleSearchSubmit}
         />

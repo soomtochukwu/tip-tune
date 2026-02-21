@@ -1,14 +1,15 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 import SearchBar from '../SearchBar';
 import { SearchSuggestionItem } from '../../../types/search.types';
 
 describe('SearchBar', () => {
-  const mockOnQueryChange = jest.fn();
-  const mockOnSelectSuggestion = jest.fn();
-  const mockOnVoiceResult = jest.fn();
-  const mockOnSubmit = jest.fn();
+  const mockOnQueryChange = vi.fn();
+  const mockOnSelectSuggestion = vi.fn();
+  const mockOnVoiceResult = vi.fn();
+  const mockOnSubmit = vi.fn();
 
   const suggestions: SearchSuggestionItem[] = [
     { type: 'artist', id: '1', title: 'Artist One', subtitle: 'Pop' },
@@ -16,7 +17,7 @@ describe('SearchBar', () => {
   ];
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders input with placeholder', () => {
@@ -52,7 +53,6 @@ describe('SearchBar', () => {
   });
 
   it('shows suggestions when query length >= 2', async () => {
-    const user = userEvent.setup();
     render(
       <SearchBar
         query="te"

@@ -1,17 +1,17 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { searchService, DEBOUNCE_MS } from '../services/searchService';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { searchService, DEBOUNCE_MS } from "../services/searchService";
 import type {
   SearchResult,
   SearchSuggestionsResponse,
   SearchFiltersState,
   SearchSuggestionItem,
-} from '../types/search.types';
+} from "../types/search.types";
 import {
   SEARCH_HISTORY_KEY,
   SEARCH_HISTORY_MAX,
   DEFAULT_SEARCH_FILTERS,
   type SearchHistoryItem,
-} from '../types/search.types';
+} from "../types/search.types";
 
 function getHistory(): SearchHistoryItem[] {
   try {
@@ -35,9 +35,34 @@ function saveHistory(items: SearchHistoryItem[]) {
 export function addToSearchHistory(query: string): void {
   const q = query.trim();
   if (!q) return;
-  const list = getHistory().filter((item) => item.query.toLowerCase() !== q.toLowerCase());
-  list.unshift({ query: q, timestamp: Date.now() });
-  const trimmed = list.slice(0, SEARCH_HISTORY_MAX);
+
+  const history = getHistory();
+  const existingIndex = history.findIndex(
+    (item) => item.query.toLowerCase() === q.toLowerCase(),
+  );
+
+  let newItem: SearchHistoryItem;
+  let newHistory = [...history];
+
+  if (existingIndex >= 0) {
+    const existing = history[existingIndex];
+    newItem = {
+      ...existing,
+      timestamp: Date.now(),
+      count: (existing.count || 1) + 1,
+    };
+    newHistory.splice(existingIndex, 1);
+  } else {
+    newItem = {
+      query: q,
+      timestamp: Date.now(),
+      count: 1,
+    };
+  }
+
+  newHistory.unshift(newItem);
+
+  const trimmed = newHistory.slice(0, SEARCH_HISTORY_MAX);
   saveHistory(trimmed);
 }
 
@@ -51,28 +76,30 @@ export function clearSearchHistory(): void {
 
 export function getTrendingSearches(): string[] {
   const list = getHistory();
-  const counts = new Map<string, number>();
-  list.forEach((item) => {
-    const q = item.query.toLowerCase();
-    counts.set(q, (counts.get(q) || 0) + 1);
-  });
-  return Array.from(counts.entries())
-    .sort((a, b) => b[1] - a[1])
+  return [...list]
+    .sort((a, b) => {
+      const countA = a.count || 1;
+      const countB = b.count || 1;
+      if (countA !== countB) return countB - countA;
+      return b.timestamp - a.timestamp;
+    })
     .slice(0, 8)
-    .map(([q]) => q);
+    .map((item) => item.query);
 }
 
 export interface UseSearchReturn {
   query: string;
   setQuery: (q: string) => void;
   filters: SearchFiltersState;
-  setFilters: (f: SearchFiltersState | ((prev: SearchFiltersState) => SearchFiltersState)) => void;
+  setFilters: (
+    f: SearchFiltersState | ((prev: SearchFiltersState) => SearchFiltersState),
+  ) => void;
   results: SearchResult | null;
   suggestions: SearchSuggestionItem[];
   suggestionsLoading: boolean;
   searchLoading: boolean;
   searchError: Error | null;
-  runSearch: (page?: number) => Promise<void>;
+  runSearch: (page?: number, queryOverride?: string) => Promise<void>;
   runSuggestions: () => void;
   commitQuery: (q: string) => void;
   history: SearchHistoryItem[];
@@ -81,8 +108,10 @@ export interface UseSearchReturn {
 }
 
 export function useSearch(): UseSearchReturn {
-  const [query, setQuery] = useState('');
-  const [filters, setFilters] = useState<SearchFiltersState>(DEFAULT_SEARCH_FILTERS);
+  const [query, setQuery] = useState("");
+  const [filters, setFilters] = useState<SearchFiltersState>(
+    DEFAULT_SEARCH_FILTERS,
+  );
   const [results, setResults] = useState<SearchResult | null>(null);
   const [suggestions, setSuggestions] = useState<SearchSuggestionItem[]>([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
@@ -92,8 +121,8 @@ export function useSearch(): UseSearchReturn {
   const [trending, setTrending] = useState<string[]>(getTrendingSearches);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastSuggestQuery = useRef('');
-  const lastSearchQuery = useRef('');
+  const lastSuggestQuery = useRef("");
+  const lastSearchQuery = useRef("");
 
   const runSuggestions = useCallback(() => {
     const q = query.trim();
@@ -104,13 +133,14 @@ export function useSearch(): UseSearchReturn {
     if (q === lastSuggestQuery.current) return;
     lastSuggestQuery.current = q;
     setSuggestionsLoading(true);
-    const typeFilter = filters.contentType === 'all' ? undefined : filters.contentType;
+    const typeFilter =
+      filters.contentType === "all" ? undefined : filters.contentType;
     searchService
       .getSuggestions(q, typeFilter, 10)
       .then((res: SearchSuggestionsResponse) => {
         const combined: SearchSuggestionItem[] = [
-          ...res.artists.map((a) => ({ ...a, type: 'artist' as const })),
-          ...res.tracks.map((t) => ({ ...t, type: 'track' as const })),
+          ...res.artists.map((a) => ({ ...a, type: "artist" as const })),
+          ...res.tracks.map((t) => ({ ...t, type: "track" as const })),
         ];
         setSuggestions(combined.slice(0, 10));
       })
@@ -127,8 +157,8 @@ export function useSearch(): UseSearchReturn {
   }, [runSuggestions]);
 
   const runSearch = useCallback(
-    async (page: number = 1) => {
-      const q = query.trim();
+    async (page: number = 1, queryOverride?: string) => {
+      const q = (queryOverride ?? query).trim();
       lastSearchQuery.current = q;
       setSearchError(null);
       setSearchLoading(true);
@@ -141,19 +171,19 @@ export function useSearch(): UseSearchReturn {
           setTrending(getTrendingSearches());
         }
       } catch (err) {
-        setSearchError(err instanceof Error ? err : new Error('Search failed'));
+        setSearchError(err instanceof Error ? err : new Error("Search failed"));
         setResults(null);
       } finally {
         setSearchLoading(false);
       }
     },
-    [query, filters]
+    [query, filters],
   );
 
   const commitQuery = useCallback((q: string) => {
     setQuery(q);
     lastSearchQuery.current = q;
-    lastSuggestQuery.current = '';
+    lastSuggestQuery.current = "";
     setSuggestions([]);
   }, []);
 

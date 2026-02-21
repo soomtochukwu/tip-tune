@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 import SearchFilters from '../SearchFilters';
 import { SearchFiltersState } from '../../../types/search.types';
 
@@ -11,10 +12,10 @@ describe('SearchFilters', () => {
     releaseDateTo: '',
     sort: 'relevance',
   };
-  const mockOnFiltersChange = jest.fn();
+  const mockOnFiltersChange = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders all filter inputs', () => {

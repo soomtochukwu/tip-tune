@@ -71,7 +71,7 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({
   }, []);
 
   const startListening = useCallback(() => {
-    if (!SpeechRecognition || disabled) return;
+    if (!SpeechRecognition || disabled || listening) return;
 
     try {
       const recognition = new SpeechRecognition();
