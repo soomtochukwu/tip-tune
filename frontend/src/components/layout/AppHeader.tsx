@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X} from 'lucide-react';
 
 const AppHeader: React.FC = () => {
   const location = useLocation();
@@ -10,6 +10,7 @@ const AppHeader: React.FC = () => {
     { label: 'Home', to: '/' },
     { label: 'Leaderboards', to: '/leaderboards' },
     { label: 'Dashboard', to: '/dashboard' },
+    { label: 'Settings', to: '/settings'},
   ];
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
@@ -39,7 +40,7 @@ const AppHeader: React.FC = () => {
                 <Link
                   key={item.to}
                   to={item.to}
-                  className={`px-3 py-1.5 rounded-md transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
                     isActive
                       ? 'bg-deep-slate text-white'
                       : 'text-primary-blue hover:text-white hover:bg-primary-blue'
@@ -73,7 +74,7 @@ const AppHeader: React.FC = () => {
                     <Link
                       to={item.to}
                       onClick={closeMenu}
-                      className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                         isActive
                           ? 'bg-deep-slate text-white'
                           : 'text-deep-slate hover:bg-gray-100'

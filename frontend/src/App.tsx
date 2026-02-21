@@ -4,6 +4,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import BadgesPage from "./pages/BadgesPage";
 import { LeaderboardsPage } from "./pages/LeaderboardsPage";
 import DashboardPage from "./pages/DashboardPage";
+import SettingsPage from "./pages/SettingsPage";
 import AppHeader from "./components/layout/AppHeader";
 import MusicPlayer, { tracks } from "./components/player/MusicPlayer";
 import { ArtistOnboarding } from "./components/ArtistOnboarding";
@@ -18,6 +19,7 @@ function App() {
           <Route path="/badges" element={<BadgesPage />} />
           <Route path="/leaderboards" element={<LeaderboardsPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           {/* <Route path="/music-player" element={<MusicPlayer />} /> */}
           <Route path="*" element={<NotFoundPage />} />
           <Route path="/onboarding" element={<ArtistOnboarding />} />
