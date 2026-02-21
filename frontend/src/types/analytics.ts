@@ -34,3 +34,14 @@ export interface LiveTip {
   x: number;
   y: number;
 }
+
+// Lightweight runtime analytics shim used across the UI. Replace with
+// real analytics implementation (Amplitude, Plausible, Segment) in production.
+export const analytics = {
+  onboardingStepViewed: (_id: string | number, _index?: number) => {},
+  onboardingStepCompleted: (_id: string | number, _index?: number, _elapsed?: number) => {},
+  onboardingDraftSaved: (_currentStep?: string) => {},
+  onboardingSkipped: (_id?: string | number) => {},
+  walletConnected: (_network?: string) => {},
+  trackUploaded: (_size?: number, _type?: string) => {},
+};

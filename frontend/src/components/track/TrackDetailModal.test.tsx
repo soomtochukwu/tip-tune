@@ -86,7 +86,7 @@ describe('TrackDetailModal', () => {
   });
 
   it('shows placeholder when no cover art', () => {
-    const trackWithoutCover = { ...mockTrack, coverArt: undefined };
+    const trackWithoutCover = { ...mockTrack, coverArt: '' };
     render(<TrackDetailModal {...defaultProps} track={trackWithoutCover} />);
     
     expect(screen.getByText('Test Track')).toBeInTheDocument();

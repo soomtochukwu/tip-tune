@@ -6,7 +6,7 @@ import Modal from '../common/Modal';
 import { useAudio } from '@/hooks/useAudio';
 import { formatTime } from '@/utils/time';
 
-interface TrackDetailModalProps {
+export interface TrackDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   track: Track | null;
