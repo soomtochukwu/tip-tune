@@ -37,7 +37,6 @@ export class ModerationController {
 
   // Artist: Manage Personal Keywords
   @Post("artist/keywords")
-  @Roles(UserRole.ARTIST)
   async addArtistKeyword(@Body() data: AddKeywordDto, @Request() req) {
     return this.moderationService.addKeyword(
       data.keyword,

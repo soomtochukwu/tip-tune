@@ -1,5 +1,4 @@
 import { IsString, IsNotEmpty, IsIn, IsEnum } from "class-validator";
-import { ModerationResult } from "../entities/moderation-log.entity";
 import { KeywordSeverity } from "../entities/blocked-keyword.entity";
 
 export class AddKeywordDto {
@@ -13,6 +12,6 @@ export class AddKeywordDto {
 }
 
 export class ReviewActionDto {
-  @IsEnum([ModerationResult.APPROVED, ModerationResult.BLOCKED])
+  @IsIn(["approve", "block"])
   action: "approve" | "block";
 }

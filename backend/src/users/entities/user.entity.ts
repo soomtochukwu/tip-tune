@@ -3,13 +3,12 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 export enum UserRole {
   USER = "user",
   ADMIN = "admin",
-  ARTIST = "artist",
 }
 
 export enum UserStatus {
-  ACTIVE = 'active',
-  SUSPENDED = 'suspended',
-  BANNED = 'banned',
+  ACTIVE = "active",
+  SUSPENDED = "suspended",
+  BANNED = "banned",
 }
 
 @Entity('users')
