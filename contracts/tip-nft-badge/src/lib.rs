@@ -16,7 +16,7 @@ pub enum Error {
 
 /// Badge types for tipping milestones
 #[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[repr(u32)]
 pub enum BadgeType {
     FirstTip = 0,
