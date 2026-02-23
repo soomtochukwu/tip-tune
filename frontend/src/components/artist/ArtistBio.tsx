@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArtistSocialLinks } from '@/types';
+import React from "react";
+import { ArtistSocialLinks } from "@/types";
 
 interface ArtistBioProps {
   bio: string;
@@ -7,7 +7,9 @@ interface ArtistBioProps {
 }
 
 const linkEntries = (socialLinks: ArtistSocialLinks) =>
-  Object.entries(socialLinks).filter((entry): entry is [string, string] => Boolean(entry[1]));
+  Object.entries(socialLinks).filter((entry): entry is [string, string] =>
+    Boolean(entry[1]),
+  );
 
 const ArtistBio: React.FC<ArtistBioProps> = ({ bio, socialLinks }) => {
   const links = linkEntries(socialLinks);
@@ -19,7 +21,7 @@ const ArtistBio: React.FC<ArtistBioProps> = ({ bio, socialLinks }) => {
 
       {links.length > 0 ? (
         <div className="mt-4">
-          <h3 className="text-sm font-semibold text-gray-900">Social Links</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Social Link</h3>
           <ul className="mt-2 space-y-2">
             {links.map(([key, url]) => (
               <li key={key}>

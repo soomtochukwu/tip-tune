@@ -21,23 +21,31 @@ import { ScheduledReleasesModule } from './scheduled-releases/scheduled-releases
 import { LeaderboardsModule } from './leaderboards/leaderboards.module';
 import { ReportsModule } from './reports/reports.module';
 import { GoalsModule } from './goals/goals.module';
+import { CommentsModule } from './comments/comments.module';
+import { CollaborationModule } from './collaboration/collaboration.module';
+import { VerificationModule } from './verification/verification.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { LicensingModule } from "./track-listening-right-management/licensing.module";
+import { AdminModule } from './admin/admin.module';
+import { ModerationModule } from "./moderation/moderation.module";
+
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: ".env",
     }),
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
+      type: "postgres",
+      host: process.env.DB_HOST || "localhost",
       port: parseInt(process.env.DB_PORT) || 5432,
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'password',
-      database: process.env.DB_NAME || 'tiptune',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: process.env.NODE_ENV !== 'production',
-      logging: process.env.NODE_ENV === 'development',
+      username: process.env.DB_USERNAME || "postgres",
+      password: process.env.DB_PASSWORD || "password",
+      database: process.env.DB_NAME || "tiptune",
+      entities: [__dirname + "/**/*.entity{.ts,.js}"],
+      synchronize: false, // Use migrations instead
+      logging: process.env.NODE_ENV === "development",
     }),
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot({ global: true }),
@@ -58,8 +66,16 @@ import { GoalsModule } from './goals/goals.module';
     LeaderboardsModule,
     ReportsModule,
     GoalsModule,
+    GamificationModule,
+    CommentsModule,
+    CollaborationModule,
+    VerificationModule,
+    AnalyticsModule,
+    LicensingModule,
+    AdminModule,
+    ModerationModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}
