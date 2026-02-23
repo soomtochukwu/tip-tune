@@ -3,7 +3,10 @@
 use super::*;
 use soroban_sdk::{testutils::Address as _, token, Address, Env, Vec};
 
-fn create_token_contract<'a>(env: &Env, admin: &Address) -> (token::Client<'a>, token::StellarAssetClient<'a>) {
+fn create_token_contract<'a>(
+    env: &Env,
+    admin: &Address,
+) -> (token::Client<'a>, token::StellarAssetClient<'a>) {
     let contract_address = env.register_stellar_asset_contract_v2(admin.clone());
     (
         token::Client::new(env, &contract_address.address()),
@@ -128,9 +131,9 @@ fn test_create_and_get_escrow() {
 
     let (token, token_admin) = create_token_contract(&env, &admin);
     token_admin.mint(&tipper, &1000);
-    
+
     let asset = types::Asset::Token(token.address.clone());
-    
+
     let amount = 200;
     let escrow_id = client.create_escrow(&tipper, &artist, &amount, &asset);
 

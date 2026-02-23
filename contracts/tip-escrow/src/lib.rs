@@ -7,7 +7,7 @@ mod types;
 mod test;
 
 use soroban_sdk::{contract, contractimpl, symbol_short, token, Address, Env, String, Vec};
-use types::{RoyaltySplit, TipRecord, TipEscrow, Asset, Error};
+use types::{Asset, Error, RoyaltySplit, TipEscrow, TipRecord};
 
 #[contract]
 pub struct TipEscrowContract;
@@ -35,9 +35,15 @@ impl TipEscrowContract {
             }
         }
 
-        let mut counter: u32 = env.storage().instance().get(&symbol_short!("CNT")).unwrap_or(0);
+        let mut counter: u32 = env
+            .storage()
+            .instance()
+            .get(&symbol_short!("CNT"))
+            .unwrap_or(0);
         counter += 1;
-        env.storage().instance().set(&symbol_short!("CNT"), &counter);
+        env.storage()
+            .instance()
+            .set(&symbol_short!("CNT"), &counter);
 
         let mut buf = [0u8; 10];
         let mut i = 10;
@@ -52,7 +58,7 @@ impl TipEscrowContract {
                 n /= 10;
             }
         }
-        
+
         let escrow_id = String::from_slice(&env, &buf[i..]);
 
         let escrow = TipEscrow {
@@ -68,16 +74,13 @@ impl TipEscrowContract {
         // Emit event
         env.events().publish(
             (symbol_short!("escrow"), symbol_short!("created")),
-            escrow.clone()
+            escrow.clone(),
         );
 
         Ok(escrow_id)
     }
 
-    pub fn get_escrow(
-        env: Env,
-        escrow_id: String,
-    ) -> Result<TipEscrow, Error> {
+    pub fn get_escrow(env: Env, escrow_id: String) -> Result<TipEscrow, Error> {
         storage::get_escrow(&env, escrow_id).ok_or(Error::EscrowNotFound)
     }
 
@@ -98,7 +101,7 @@ impl TipEscrowContract {
         if let Some(splits) = storage::get_splits(&env, &artist) {
             // Distribute according to splits
             let mut remaining = amount;
-            
+
             for split in splits.iter() {
                 let split_amount = (amount * split.percentage as i128) / 10000;
                 if split_amount > 0 {
@@ -106,7 +109,7 @@ impl TipEscrowContract {
                     remaining -= split_amount;
                 }
             }
-            
+
             // Send remaining to artist
             if remaining > 0 {
                 token_client.transfer(&sender, &artist, &remaining);
