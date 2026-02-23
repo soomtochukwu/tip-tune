@@ -35,13 +35,65 @@ export interface LiveTip {
   y: number;
 }
 
-// Lightweight runtime analytics shim used across the UI. Replace with
-// real analytics implementation (Amplitude, Plausible, Segment) in production.
+type AnalyticsEvent =
+  | {
+      name: "onboarding_step_viewed";
+      stepId: string;
+      stepIndex: number;
+    }
+  | {
+      name: "onboarding_step_completed";
+      stepId: string;
+      stepIndex: number;
+      elapsedMs: number;
+    }
+  | {
+      name: "onboarding_skipped";
+      stepId: string;
+    }
+  | {
+      name: "onboarding_draft_saved";
+      stepId: string;
+    }
+  | {
+      name: "wallet_connected";
+      network: string;
+    }
+  | {
+      name: "track_uploaded";
+      fileSize: number;
+      fileType: string;
+    };
+
+function track(event: AnalyticsEvent) {
+  // Replace this with your analytics provider integration.
+  if (typeof window !== "undefined") {
+    // Keep this visible during development and harmless in production.
+    console.debug("[analytics]", event);
+  }
+}
+
 export const analytics = {
-  onboardingStepViewed: (_id: string | number, _index?: number) => {},
-  onboardingStepCompleted: (_id: string | number, _index?: number, _elapsed?: number) => {},
-  onboardingDraftSaved: (_currentStep?: string) => {},
-  onboardingSkipped: (_id?: string | number) => {},
-  walletConnected: (_network?: string) => {},
-  trackUploaded: (_size?: number, _type?: string) => {},
+  onboardingStepViewed(stepId: string, stepIndex: number) {
+    track({ name: "onboarding_step_viewed", stepId, stepIndex });
+  },
+  onboardingStepCompleted(
+    stepId: string,
+    stepIndex: number,
+    elapsedMs: number,
+  ) {
+    track({ name: "onboarding_step_completed", stepId, stepIndex, elapsedMs });
+  },
+  onboardingSkipped(stepId: string) {
+    track({ name: "onboarding_skipped", stepId });
+  },
+  onboardingDraftSaved(stepId: string) {
+    track({ name: "onboarding_draft_saved", stepId });
+  },
+  walletConnected(network: string) {
+    track({ name: "wallet_connected", network });
+  },
+  trackUploaded(fileSize: number, fileType: string) {
+    track({ name: "track_uploaded", fileSize, fileType });
+  },
 };

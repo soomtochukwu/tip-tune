@@ -13,6 +13,7 @@ import { ArtistOnboarding } from "./components/ArtistOnboarding";
 import SearchPage from "./pages/SearchPage";
 
 import AnalyticsDashboard from "./components/analytics/AnalyticsDashboard";
+import ArtistProfilePage from "./pages/ArtistProfilePage";
 import InstallPrompt from "./components/InstallPrompt";
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/analytics" element={<AnalyticsDashboard />} />
+          <Route path="/artists/:artistId" element={<ArtistProfilePage />} />
           <Route path="/tips/history" element={<TipHistoryPage />} />
           {/* <Route path="/music-player" element={<MusicPlayer />} /> */}
           <Route path="*" element={<NotFoundPage />} />
