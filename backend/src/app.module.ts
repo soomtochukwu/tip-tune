@@ -20,6 +20,7 @@ import { GamificationModule } from './gamification/gamification.module';
 import { ScheduledReleasesModule } from './scheduled-releases/scheduled-releases.module';
 import { LeaderboardsModule } from './leaderboards/leaderboards.module';
 import { ReportsModule } from './reports/reports.module';
+import { FeesModule } from './fees/fees.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { ReportsModule } from './reports/reports.module';
     ScheduledReleasesModule,
     LeaderboardsModule,
     ReportsModule,
+    FeesModule,
   ],
   controllers: [],
   providers: [],

@@ -48,6 +48,9 @@ export class Artist {
   @Column()
   walletAddress: string; // Stellar public key
 
+  @Column({ type: 'boolean', default: false })
+  isVerified: boolean;
+
   @Column({ type: 'decimal', precision: 18, scale: 2, default: 0 })
   totalTipsReceived: string;
 

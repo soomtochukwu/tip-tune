@@ -7,6 +7,7 @@ import { StellarModule } from '../stellar/stellar.module';
 import { UsersModule } from '../users/users.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ActivitiesModule } from '../activities/activities.module';
+import { FeesModule } from '../fees/fees.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ActivitiesModule } from '../activities/activities.module';
     UsersModule,
     NotificationsModule,
     forwardRef(() => ActivitiesModule),
+    FeesModule,
   ],
   controllers: [TipsController],
   providers: [TipsService],
