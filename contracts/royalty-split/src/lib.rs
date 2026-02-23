@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, contracterror, contracttype, Address, Env, String, Vec};
+use soroban_sdk::{contract, contracterror, contractimpl, contracttype, Address, Env, String, Vec};
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -30,7 +30,7 @@ impl RoyaltySplit {
         let mut total_percentage: u32 = 0;
         for param in collaborators.clone() {
             let (_, percentage) = param;
-            if percentage <= 0 || percentage > 100 {
+            if percentage == 0 || percentage > 100 {
                 return Err(Error::InvalidPercentage);
             }
             total_percentage += percentage;
@@ -40,7 +40,9 @@ impl RoyaltySplit {
             return Err(Error::TotalNot100);
         }
 
-        env.storage().persistent().set(&DataKey::Split(track_id), &collaborators);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Split(track_id), &collaborators);
         Ok(())
     }
 
@@ -53,7 +55,7 @@ impl RoyaltySplit {
             // Nothing to distribute but return empty
             return Ok(Vec::new(&env));
         }
-        
+
         let split: Vec<(Address, u32)> = env
             .storage()
             .persistent()

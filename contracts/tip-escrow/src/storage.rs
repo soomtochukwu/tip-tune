@@ -1,6 +1,6 @@
-use soroban_sdk::{contracttype, symbol_short, Address, Env, Symbol, Vec, String};
+use soroban_sdk::{contracttype, symbol_short, Address, Env, String, Symbol, Vec};
 
-use crate::types::{RoyaltySplit, TipRecord, TipEscrow};
+use crate::types::{RoyaltySplit, TipEscrow, TipRecord};
 
 const TIPS: Symbol = symbol_short!("TIPS");
 const SPLITS: Symbol = symbol_short!("SPLITS");
@@ -30,7 +30,9 @@ pub fn get_splits(env: &Env, artist: &Address) -> Option<Vec<RoyaltySplit>> {
 }
 
 pub fn save_escrow(env: &Env, escrow_id: String, escrow: &TipEscrow) {
-    env.storage().persistent().set(&DataKey::Escrow(escrow_id), escrow);
+    env.storage()
+        .persistent()
+        .set(&DataKey::Escrow(escrow_id), escrow);
 }
 
 pub fn get_escrow(env: &Env, escrow_id: String) -> Option<TipEscrow> {
