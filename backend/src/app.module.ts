@@ -27,6 +27,7 @@ import { VerificationModule } from './verification/verification.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { LicensingModule } from "./track-listening-right-management/licensing.module";
 import { AdminModule } from './admin/admin.module';
+import { MetricsModule } from './metrics/metrics.module';
 
 
 @Module({
@@ -35,6 +36,7 @@ import { AdminModule } from './admin/admin.module';
       isGlobal: true,
       envFilePath: ".env",
     }),
+    MetricsModule,
     TypeOrmModule.forRoot({
       type: "postgres",
       host: process.env.DB_HOST || "localhost",
