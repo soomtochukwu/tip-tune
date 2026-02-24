@@ -1,5 +1,6 @@
 #![no_std]
 
+pub mod events;
 pub mod storage;
 pub mod types;
 
@@ -9,7 +10,6 @@ use soroban_sdk::{
 use storage::{read_subscription, write_subscription};
 use types::{Error, Subscription, SubscriptionFrequency, SubscriptionStatus};
 
-// Time constants in seconds
 const WEEK_IN_SECONDS: u64 = 604_800;
 const MONTH_IN_SECONDS: u64 = 2_592_000;
 
@@ -18,7 +18,6 @@ pub struct TipSubscriptionContract;
 
 #[contractimpl]
 impl TipSubscriptionContract {
-    /// Creates a new recurring tip subscription
     pub fn create_subscription(
         env: Env,
         subscriber: Address,
@@ -33,14 +32,24 @@ impl TipSubscriptionContract {
             return Err(Error::InvalidAmount);
         }
 
-        // Generate a simple ID using the ledger sequence and a counter (simplified for Soroban)
-        // In a strict production environment, we'd use a robust counter mapped in storage.
-        let mut id_bytes = [0u8; 8];
-        let seq = env.ledger().sequence();
-        id_bytes.copy_from_slice(&seq.to_be_bytes());
-        let sub_id = String::from_bytes(&env, &id_bytes);
+        let count_key = symbol_short!("sub_cnt");
+        let count: u32 = env.storage().instance().get(&count_key).unwrap_or(0);
+        let next_count = count + 1;
+        env.storage().instance().set(&count_key, &next_count);
 
-        // Calculate next payment timestamp
+        let mut buffer = [0u8; 10];
+        let mut num = next_count;
+        let mut len = 0;
+        while num > 0 {
+            buffer[len] = b'0' + (num % 10) as u8;
+            num /= 10;
+            len += 1;
+        }
+        for i in 0..(len / 2) {
+            buffer.swap(i, len - 1 - i);
+        }
+        let sub_id = String::from_bytes(&env, &buffer[..len]);
+
         let current_time = env.ledger().timestamp();
         let duration = match frequency {
             SubscriptionFrequency::Weekly => WEEK_IN_SECONDS,
@@ -59,17 +68,14 @@ impl TipSubscriptionContract {
             next_payment_timestamp,
         };
 
-        // Save to storage
         write_subscription(&env, &sub_id, &subscription);
 
-        // Emit creation event
-        env.events()
-            .publish((symbol_short!("sub_crt"), sub_id.clone()), subscriber);
+        // CLEANED UP: Using events module
+        events::subscription_created(&env, sub_id.clone(), subscriber);
 
         Ok(sub_id)
     }
 
-    /// Processes an automatic payment if the timestamp is ripe
     pub fn process_payment(env: Env, subscription_id: String) -> Result<(), Error> {
         let mut sub = read_subscription(&env, &subscription_id).ok_or(Error::SubscriptionNotFound)?;
 
@@ -82,33 +88,27 @@ impl TipSubscriptionContract {
             return Err(Error::PaymentTooEarly);
         }
 
-        // Execute the token transfer using Soroban's standard token interface
         let token_client = token::Client::new(&env, &sub.token);
         token_client.transfer(
-            &env.current_contract_address(), // Typically, subscriptions utilize allowances or escrow. For this implementation, we assume the contract is allowed to move funds on behalf of the subscriber.
+            &sub.subscriber,
             &sub.artist,
             &sub.amount,
         );
-        // Note: For real-world use, the `subscriber` must have approved this contract as a spender via `token_client.approve()`.
 
-        // Update the next payment timestamp
         let duration = match sub.frequency {
             SubscriptionFrequency::Weekly => WEEK_IN_SECONDS,
             SubscriptionFrequency::Monthly => MONTH_IN_SECONDS,
         };
         sub.next_payment_timestamp = current_time + duration;
 
-        // Save updated state
         write_subscription(&env, &subscription_id, &sub);
 
-        // Emit payment processed event
-        env.events()
-            .publish((symbol_short!("sub_paid"), subscription_id), sub.amount);
+        // CLEANED UP: Using events module
+        events::payment_processed(&env, subscription_id, sub.amount);
 
         Ok(())
     }
 
-    /// Cancels an active subscription
     pub fn cancel_subscription(env: Env, subscription_id: String) -> Result<(), Error> {
         let mut sub = read_subscription(&env, &subscription_id).ok_or(Error::SubscriptionNotFound)?;
         sub.subscriber.require_auth();
@@ -116,13 +116,12 @@ impl TipSubscriptionContract {
         sub.status = SubscriptionStatus::Cancelled;
         write_subscription(&env, &subscription_id, &sub);
 
-        env.events()
-            .publish((symbol_short!("sub_canc"), subscription_id), sub.subscriber);
+        // CLEANED UP: Using events module
+        events::subscription_cancelled(&env, subscription_id, sub.subscriber);
 
         Ok(())
     }
 
-    /// Pauses an active subscription
     pub fn pause_subscription(env: Env, subscription_id: String) -> Result<(), Error> {
         let mut sub = read_subscription(&env, &subscription_id).ok_or(Error::SubscriptionNotFound)?;
         sub.subscriber.require_auth();
@@ -134,13 +133,12 @@ impl TipSubscriptionContract {
         sub.status = SubscriptionStatus::Paused;
         write_subscription(&env, &subscription_id, &sub);
 
-        env.events()
-            .publish((symbol_short!("sub_paus"), subscription_id), sub.subscriber);
+        // CLEANED UP: Using events module
+        events::subscription_paused(&env, subscription_id, sub.subscriber);
 
         Ok(())
     }
 
-    /// Resumes a paused subscription
     pub fn resume_subscription(env: Env, subscription_id: String) -> Result<(), Error> {
         let mut sub = read_subscription(&env, &subscription_id).ok_or(Error::SubscriptionNotFound)?;
         sub.subscriber.require_auth();
@@ -152,9 +150,16 @@ impl TipSubscriptionContract {
         sub.status = SubscriptionStatus::Active;
         write_subscription(&env, &subscription_id, &sub);
 
-        env.events()
-            .publish((symbol_short!("sub_resm"), subscription_id), sub.subscriber);
+        // CLEANED UP: Using events module
+        events::subscription_resumed(&env, subscription_id, sub.subscriber);
 
         Ok(())
     }
+
+    pub fn get_subscription(env: Env, subscription_id: String) -> Result<Subscription, Error> {
+        read_subscription(&env, &subscription_id).ok_or(Error::SubscriptionNotFound)
+    }
 }
+
+#[cfg(test)]
+mod test;
