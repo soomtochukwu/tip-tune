@@ -70,7 +70,6 @@ impl TipSubscriptionContract {
 
         write_subscription(&env, &sub_id, &subscription);
 
-        // CLEANED UP: Using events module
         events::subscription_created(&env, sub_id.clone(), subscriber);
 
         Ok(sub_id)
@@ -103,7 +102,6 @@ impl TipSubscriptionContract {
 
         write_subscription(&env, &subscription_id, &sub);
 
-        // CLEANED UP: Using events module
         events::payment_processed(&env, subscription_id, sub.amount);
 
         Ok(())
@@ -113,10 +111,14 @@ impl TipSubscriptionContract {
         let mut sub = read_subscription(&env, &subscription_id).ok_or(Error::SubscriptionNotFound)?;
         sub.subscriber.require_auth();
 
+        // FIX: Prevent double-cancel
+        if sub.status == SubscriptionStatus::Cancelled {
+            return Err(Error::InvalidStatus);
+        }
+
         sub.status = SubscriptionStatus::Cancelled;
         write_subscription(&env, &subscription_id, &sub);
 
-        // CLEANED UP: Using events module
         events::subscription_cancelled(&env, subscription_id, sub.subscriber);
 
         Ok(())
@@ -126,14 +128,14 @@ impl TipSubscriptionContract {
         let mut sub = read_subscription(&env, &subscription_id).ok_or(Error::SubscriptionNotFound)?;
         sub.subscriber.require_auth();
 
-        if sub.status == SubscriptionStatus::Cancelled {
+        // FIX: Require Active status before pausing
+        if sub.status != SubscriptionStatus::Active {
             return Err(Error::InvalidStatus);
         }
 
         sub.status = SubscriptionStatus::Paused;
         write_subscription(&env, &subscription_id, &sub);
 
-        // CLEANED UP: Using events module
         events::subscription_paused(&env, subscription_id, sub.subscriber);
 
         Ok(())
@@ -150,7 +152,6 @@ impl TipSubscriptionContract {
         sub.status = SubscriptionStatus::Active;
         write_subscription(&env, &subscription_id, &sub);
 
-        // CLEANED UP: Using events module
         events::subscription_resumed(&env, subscription_id, sub.subscriber);
 
         Ok(())
